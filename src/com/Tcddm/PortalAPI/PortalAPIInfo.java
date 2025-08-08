@@ -4,7 +4,7 @@ package com.Tcddm.PortalAPI;
  * API版本信息
  */
 public class PortalAPIInfo {
-    private final String version="1.0.0";
+    private final String version="1.1.0";
     private final String author="Tcddm";
 
     /**
