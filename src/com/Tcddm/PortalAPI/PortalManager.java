@@ -141,10 +141,12 @@ public class PortalManager {
     public boolean addPortal(Portal portal,Player player,Location clickedBlockLocation){
         PortalDirection direction=getDirectionByPlayerFacing(player);
         Location loc=clickedBlockLocation;
+        int temp=(int)portal.getWidth()/2;
         if(direction==PortalDirection.X_AXIS){
-            loc.add(-2,2,0);
+
+            loc.add(-temp,2,0);
         }else{
-            loc.add(0,2,-2);
+            loc.add(0,2,-temp);
         }
         portal.setPortalLocation(loc);
         return addPortal(portal,direction);
