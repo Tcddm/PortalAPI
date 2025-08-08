@@ -97,7 +97,10 @@ public class main extends JavaPlugin implements PortalAPI {
 }
 ```
 ### 4. 创建传送门
-```java
-Location loc=p.getLocation();
+```
+Location loc=player.getLocation();
 loc.add(-2,1,0);
-System.out.print(g.getPortalManager().addPortal(new YourPortal(loc)));
+System.out.print(getPortalManager().addPortal(new YourPortal(loc)));
+```
+## 如何在项目中使用
+PortalAPI并非独立插件，无法在服务器中使用，将其加入项目需要首先在IDE中依赖jar文件，并在你项目的编译产物中添加PortalAPI的编译产物
