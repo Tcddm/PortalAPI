@@ -54,6 +54,27 @@ public class PortalManager {
     }
 
     /**
+     * 通过玩家判断传送门方向
+     * @param player 玩家
+     * @return 传送门方向
+     */
+    public PortalDirection getDirectionByPlayerFacing(Player player) {
+        Location loc = player.getLocation();
+        float yaw = loc.getYaw();  // 获取玩家朝向角度（Yaw角）
+
+        // 标准化Yaw角（转换为0-360度）
+        yaw = (yaw % 360 + 360) % 360;
+
+        // 判断朝向：
+        // 1. 315°-45° 为北方（North），135°-225° 为南方（South）→ 沿Z轴延伸
+        // 2. 45°-135° 为东方（East），225°-315° 为西方（West）→ 沿X轴延伸
+        if ((yaw >= 315 && yaw < 360) || (yaw >= 0 && yaw < 45) || (yaw >= 135 && yaw < 225)) {
+            return PortalDirection.X_AXIS;  // 南北方向 → Z轴延伸
+        } else {
+            return PortalDirection.Z_AXIS;  // 东西方向 → X轴延伸
+        }
+    }
+    /**
      * 启动玩家进入传送门处理任务,倒计时完成后触发传送门的handle方法
      * @param player 玩家
      * @param portal 玩家所在的传送门
@@ -87,23 +108,46 @@ public class PortalManager {
         task.cancel();
         portalWaitTasks.remove(player);
     }
+
     /**
-     * 创建并添加传送门（自动检查合法性并生成方块）
+     * 添加传送门
      * @param portal 传送门
-     * @return 若创建成功返回 true，否则 false
+     * @param direction 方向
+     * @return 是否成功创建
      */
-    public boolean addPortal(Portal portal) {
+    public boolean addPortal(Portal portal,PortalDirection direction){
         // 检查传送门是否已存在（同位置同类型）
         if (isPortalExists(portal)) {
             return false;
         }
+        portal.setDirection(PortalDirection.Z_AXIS);
         // 检查生成合法性并生成方块
+        portal.setDirection(direction);
         if (portal.canGeneratePortal()) {
             portal.generatePortal();
             portals.add(portal);
             return true;
         }
         return false;
+    }
+
+    /**
+     * 添加传送门（通过玩家朝向判断传送门方向，玩家点击的方块的位置来判断生成位置）
+     * @param portal 传送门(初始化可以不传入Location)
+     * @param player 玩家
+     * @param clickedBlockLocation 玩家点击的方块的位置
+     * @return 是否成功创建
+     */
+    public boolean addPortal(Portal portal,Player player,Location clickedBlockLocation){
+        PortalDirection direction=getDirectionByPlayerFacing(player);
+        Location loc=clickedBlockLocation;
+        if(direction==PortalDirection.X_AXIS){
+            loc.add(-2,2,0);
+        }else{
+            loc.add(0,2,-2);
+        }
+        portal.setPortalLocation(loc);
+        return addPortal(portal,direction);
     }
 
     /**
@@ -147,18 +191,21 @@ public class PortalManager {
 
 
             if(!portal.getActivation()){continue;}
-
-
-            Location portalLoc = portal.getPortalLocation();
-            int x = portalLoc.getBlockX();
-            int y = portalLoc.getBlockY();
-            int z = portalLoc.getBlockZ();
-            // 检查位置是否在传送门的宽度（x轴）和长度（y轴）范围内
-            if (loc.getBlockX() >= x && loc.getBlockX() < x + portal.getWidth()
-                    && loc.getBlockY() >= y && loc.getBlockY() < y + portal.getLength()
-                    && loc.getBlockZ() == z) { // z轴固定（传送门为平面）
+            if(portal.isInPortal(loc)){
                 return portal;
             }
+
+           // Location portalLoc = portal.getPortalLocation();
+            //            int x = portalLoc.getBlockX();
+            //            int y = portalLoc.getBlockY();
+            //            int z = portalLoc.getBlockZ();
+            //            // 检查位置是否在传送门的宽度（x轴）和长度（y轴）范围内
+            //            if (loc.getBlockX() >= x && loc.getBlockX() < x + portal.getWidth()
+            //                    && loc.getBlockY() >= y && loc.getBlockY() < y + portal.getLength()
+            //                    && loc.getBlockZ() == z) { // z轴固定（传送门为平面）
+            //                return portal;
+            //            }
+
         }
         return null;
     }
