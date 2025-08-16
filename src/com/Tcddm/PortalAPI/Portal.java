@@ -243,9 +243,7 @@ public class Portal {
             }
         }
 
-        if (!isActivation) {
-            setActivation(true);
-        }
+
         return true;
     }
 
